@@ -1,0 +1,27 @@
+{
+    "name": "viviniko/repository",
+    "description": "VIVINIKO Repository Service Provider",
+	"keywords": ["viviniko", "repository", "laravel"],
+	"homepage": "http://viviniko.com",
+	"license": "MIT",
+	"authors": [
+        {
+            "name": "viviniko",
+            "email": "viviniko.shop@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "illuminate/database": "~5.0",
+        "illuminate/http": "~5.0",
+        "illuminate/support": "~5.0",
+        "illuminate/validation": "~5.0"
+    },
+	"autoload": {
+        "psr-0": {
+            "Viviniko\\Repository": "src"
+        }
+    },
+    "minimum-stability": "dev",
+	"prefer-stable": true
+}
