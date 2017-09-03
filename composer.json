@@ -17,11 +17,11 @@
         "illuminate/support": "~5.0",
         "illuminate/validation": "~5.0"
     },
-	"autoload": {
+    "autoload": {
         "psr-0": {
             "Viviniko\\Repository": "src"
         }
     },
     "minimum-stability": "dev",
-	"prefer-stable": true
+    "prefer-stable": true
 }
