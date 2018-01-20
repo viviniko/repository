@@ -18,6 +18,28 @@ abstract class SimpleRepository
     protected $fieldSearchable = [];
 
     /**
+     * Paginate.
+     *
+     * @param $pageSize
+     * @param string $searchName
+     * @param null $search
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function paginate($pageSize, $searchName = 'search', $search = null)
+    {
+        if (!$search) {
+            $search = request()->get($searchName);
+        }
+        $search = is_array($search) ? $search : [];
+        $items = $this->search($search)->paginate($pageSize);
+        if (!empty($search)) {
+            $items->appends([$searchName => $search]);
+        }
+
+        return $items;
+    }
+
+    /**
      * Search.
      *
      * @param $keywords
