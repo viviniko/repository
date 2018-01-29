@@ -23,15 +23,25 @@ abstract class SimpleRepository
      * @param $pageSize
      * @param string $searchName
      * @param null $search
+     * @param null $order
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function paginate($pageSize, $searchName = 'search', $search = null)
+    public function paginate($pageSize, $searchName = 'search', $search = null, $order = null)
     {
         if (!$search) {
             $search = request()->get($searchName);
         }
         $search = is_array($search) ? $search : [];
-        $items = $this->search($search)->paginate($pageSize);
+        $builder = $this->search($search);
+        if (!empty($order)) {
+            if (is_string($order)) {
+                $order = [$order, 'desc'];
+            }
+            foreach ($order as $column => $direct) {
+                $builder->orderBy($column, $direct);
+            }
+        }
+        $items = $builder->paginate($pageSize);
         if (!empty($search)) {
             $items->appends([$searchName => $search]);
         }
