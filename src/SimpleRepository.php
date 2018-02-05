@@ -83,11 +83,19 @@ abstract class SimpleRepository
      */
     public function create(array $data)
     {
-        if (method_exists($this, 'validateCreateData')) {
-            $this->validateCreateData($data);
+        if (method_exists($this, 'beforeCreate')) {
+            if (($data = $this->beforeCreate($data)) === false) {
+                return false;
+            }
         }
 
-        return $this->createModel()->newQuery()->create($data);
+        $entity = $this->createModel()->newQuery()->create($data);
+
+        if (method_exists($this, 'postCreate')) {
+            return $this->postCreate($entity);
+        }
+
+        return $entity;
     }
 
     /**
@@ -100,14 +108,18 @@ abstract class SimpleRepository
      */
     public function update($id, array $data)
     {
-        if (method_exists($this, 'validateUpdateData')) {
-            $this->validateUpdateData($id, $data);
-        }
+        if ($entity = $this->find($id)) {
+            if (method_exists($this, 'beforeUpdate')) {
+                if (($data = $this->beforeUpdate($id, $data)) === false) {
+                    return false;
+                }
+            }
 
-        $entity = $this->find($id);
-
-        if ($entity) {
             $entity->update($data);
+
+            if (method_exists($this, 'postUpdate')) {
+                return $this->postUpdate($entity);
+            }
         }
 
         return $entity;
@@ -118,13 +130,27 @@ abstract class SimpleRepository
      *
      * @param $id
      *
-     * @return int
+     * @return bool
      */
     public function delete($id)
     {
-        $entity = $this->find($id);
+        if ($entity = $this->find($id)) {
+            if (method_exists($this, 'beforeDelete')) {
+                if ($this->beforeDelete($id) === false) {
+                    return false;
+                }
+            }
 
-        return $entity ? $entity->delete() : null;
+            if ($result = $entity->delete()) {
+                if (method_exists($this, 'postDelete')) {
+                    return $this->postDelete($entity);
+                }
+
+                return $result;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -163,6 +189,11 @@ abstract class SimpleRepository
         return $query->get((array) $columns);
     }
 
+    /**
+     * @param $column
+     * @param null $value
+     * @return bool
+     */
     public function exists($column, $value = null)
     {
         $query = $this->createModel()->newQuery();
