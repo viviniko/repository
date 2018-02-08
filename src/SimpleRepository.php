@@ -92,7 +92,7 @@ abstract class SimpleRepository
         $entity = $this->createModel()->newQuery()->create($data);
 
         if (method_exists($this, 'postCreate')) {
-            return $this->postCreate($entity);
+            $this->postCreate($entity);
         }
 
         return $entity;
@@ -118,7 +118,7 @@ abstract class SimpleRepository
             $entity->update($data);
 
             if (method_exists($this, 'postUpdate')) {
-                return $this->postUpdate($entity);
+                $this->postUpdate($entity);
             }
         }
 
@@ -143,7 +143,7 @@ abstract class SimpleRepository
 
             if ($result = $entity->delete()) {
                 if (method_exists($this, 'postDelete')) {
-                    return $this->postDelete($entity);
+                    $this->postDelete($entity);
                 }
 
                 return $result;
