@@ -34,11 +34,12 @@ abstract class SimpleRepository
         $search = is_array($search) ? $search : [];
         $builder = $this->search($search);
         if (!empty($order)) {
+            $orders = [];
             if (is_string($order)) {
-                $order = [$order, 'desc'];
+                $orders = [[$order, 'desc']];
             }
-            foreach ($order as $params) {
-                $builder->orderBy(...$params);
+            foreach ($orders as $params) {
+                $builder->orderBy(...(is_array($params) ? $params : [$params, 'desc']));
             }
         }
         $items = $builder->paginate($pageSize);
