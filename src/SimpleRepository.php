@@ -37,8 +37,8 @@ abstract class SimpleRepository
             if (is_string($order)) {
                 $order = [$order, 'desc'];
             }
-            foreach ($order as $column => $direct) {
-                $builder->orderBy($column, $direct);
+            foreach ($order as $params) {
+                $builder->orderBy(...$params);
             }
         }
         $items = $builder->paginate($pageSize);
