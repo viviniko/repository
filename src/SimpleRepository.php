@@ -2,6 +2,7 @@
 
 namespace Viviniko\Repository;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 
@@ -28,10 +29,8 @@ abstract class SimpleRepository
      */
     public function paginate($pageSize, $searchName = 'search', $search = null, $order = null)
     {
-        if (!$search) {
-            $search = request()->get($searchName);
-        }
-        $search = is_array($search) ? $search : [];
+        $query = $searchName ? (array)request()->get($searchName) : [];
+        $search = array_merge($query, $search instanceof Arrayable ? $search->toArray() : (array)$search);
         $builder = $this->search($search);
         if (!empty($order)) {
             $orders = [];
@@ -43,8 +42,8 @@ abstract class SimpleRepository
             }
         }
         $items = $builder->paginate($pageSize);
-        if (!empty($search)) {
-            $items->appends([$searchName => $search]);
+        if (!empty($query)) {
+            $items->appends([$searchName => $query]);
         }
 
         return $items;
