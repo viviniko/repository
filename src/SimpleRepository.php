@@ -4,6 +4,7 @@ namespace Viviniko\Repository;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 
 abstract class SimpleRepository
@@ -36,6 +37,12 @@ abstract class SimpleRepository
             $orders = [];
             if (is_string($order)) {
                 $orders = [[$order, 'desc']];
+            } else if (Arr::isAssoc($order)) {
+                foreach ($order as $name => $direct) {
+                    $orders[] = [$name, $direct];
+                }
+            } else {
+                $orders = $order;
             }
             foreach ($orders as $params) {
                 $builder->orderBy(...(is_array($params) ? $params : [$params, 'desc']));
