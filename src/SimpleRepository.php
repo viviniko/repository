@@ -179,7 +179,7 @@ abstract class SimpleRepository
      * @param $column
      * @param null $value
      * @param array $columns
-     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function findAllBy($column, $value = null, $columns = ['*'])
     {
@@ -187,10 +187,19 @@ abstract class SimpleRepository
         if (is_array($column)) {
             $boolean = $value ?: 'and';
             foreach ($column as $field => $value) {
-                $query->where($field, '=', $value, $boolean);
+                if (is_array($value) || $value instanceof Arrayable) {
+                    $query->whereIn($field, $value, $boolean);
+                } else {
+                    $query->where($field, '=', $value, $boolean);
+                }
             }
         } else {
-            $query->where($column, $value);
+            if (is_array($value) || $value instanceof Arrayable) {
+                $query->whereIn($column, $value);
+            } else {
+                $query->where($column, $value);
+            }
+
         }
 
         return $query->get((array) $columns);
