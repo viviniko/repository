@@ -181,7 +181,7 @@ abstract class SimpleRepository
      * @param array $columns
      * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
-    public function findBy($column, $value = null, $columns = ['*'])
+    public function findAllBy($column, $value = null, $columns = ['*'])
     {
         $query = $this->createModel()->newQuery();
         if (is_array($column)) {
@@ -194,6 +194,21 @@ abstract class SimpleRepository
         }
 
         return $query->get((array) $columns);
+    }
+
+    public function findBy($column, $value = null, $columns = ['*'])
+    {
+        $query = $this->createModel()->newQuery();
+        if (is_array($column)) {
+            $boolean = $value ?: 'and';
+            foreach ($column as $field => $value) {
+                $query->where($field, '=', $value, $boolean);
+            }
+        } else {
+            $query->where($column, $value);
+        }
+
+        return $query->first((array) $columns);
     }
 
     /**
