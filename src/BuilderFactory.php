@@ -2,6 +2,7 @@
 
 namespace Viviniko\Repository;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class BuilderFactory
@@ -9,7 +10,7 @@ class BuilderFactory
     /**
      * Create a new search builder instance.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder $model
      * @param  string|array  $query
      * @param  array  $rules
      *
@@ -17,7 +18,7 @@ class BuilderFactory
      */
     public static function make($model, $query, $rules)
     {
-        $builder = $model->newQuery();
+        $builder = $model instanceof Model ? $model->newQuery() : $model;
         $rules = static::parseRules($rules);
 
         if (!empty($query) && is_array($query)) {

@@ -3,21 +3,39 @@
 namespace Viviniko\Repository;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Config;
 
-abstract class SimpleRepository
+class SimpleRepository
 {
     /**
-     * @var string
+     * @var \Illuminate\Database\Eloquent\Model
      */
-    protected $modelConfigKey;
+    protected $model;
 
     /**
      * @var array
      */
-    protected $fieldSearchable = [];
+    protected $searchRules = [];
+
+    /**
+     * @var \Illuminate\Http\Request
+     */
+    protected $request;
+
+    /**
+     * SimpleRepository constructor.
+     * @param null $model
+     */
+    public function __construct($model = null)
+    {
+        if ($model) {
+            $this->model = $model;
+        }
+
+        $this->init();
+    }
 
     /**
      * Paginate.
@@ -30,9 +48,25 @@ abstract class SimpleRepository
      */
     public function paginate($pageSize, $searchName = 'search', $search = null, $order = null)
     {
-        $query = $searchName ? (array)request()->get($searchName) : [];
+        $searchRules = [];
+        $query = [];
+        if (is_array($searchName)) {
+            if (Arr::isAssoc($searchName)) {
+                $query = $searchName;
+            } else {
+                list($query, $searchRules) = $searchName;
+                if (is_string($query)) {
+                    $searchName = $query;
+                }
+            }
+        }
+
+        if (is_string($searchName) && $this->request) {
+            $query = (array)$this->request->get($searchName);
+        }
+
         $search = array_merge($query, $search instanceof Arrayable ? $search->toArray() : (array)$search);
-        $builder = $this->search($search);
+        $builder = $this->search($search, $searchRules);
         if (!empty($order)) {
             $orders = [];
             if (is_string($order)) {
@@ -49,7 +83,7 @@ abstract class SimpleRepository
             }
         }
         $items = $builder->paginate($pageSize);
-        if (!empty($query)) {
+        if (!empty($query) && is_string($searchName)) {
             $items->appends([$searchName => $query]);
         }
 
@@ -57,15 +91,14 @@ abstract class SimpleRepository
     }
 
     /**
-     * Search.
+     * All data.
      *
-     * @param $keywords
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param array $columns
+     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function search($keywords)
+    public function all($columns = ['*'])
     {
-        return BuilderFactory::make($this->createModel(), $keywords instanceof Request ? $keywords->all() : $keywords, $this->fieldSearchable);
+        return $this->createModel()->newQuery()->get($columns);
     }
 
     /**
@@ -183,41 +216,18 @@ abstract class SimpleRepository
      */
     public function findAllBy($column, $value = null, $columns = ['*'])
     {
-        $query = $this->createModel()->newQuery();
-        if (is_array($column)) {
-            $boolean = $value ?: 'and';
-            foreach ($column as $field => $value) {
-                if (is_array($value) || $value instanceof Arrayable) {
-                    $query->whereIn($field, $value, $boolean);
-                } else {
-                    $query->where($field, '=', $value, $boolean);
-                }
-            }
-        } else {
-            if (is_array($value) || $value instanceof Arrayable) {
-                $query->whereIn($column, $value);
-            } else {
-                $query->where($column, $value);
-            }
-
-        }
-
-        return $query->get((array) $columns);
+        return $this->where($column, $value)->get((array) $columns);
     }
 
+    /**
+     * @param $column
+     * @param null $value
+     * @param array $columns
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|null|object
+     */
     public function findBy($column, $value = null, $columns = ['*'])
     {
-        $query = $this->createModel()->newQuery();
-        if (is_array($column)) {
-            $boolean = $value ?: 'and';
-            foreach ($column as $field => $value) {
-                $query->where($field, '=', $value, $boolean);
-            }
-        } else {
-            $query->where($column, $value);
-        }
-
-        return $query->first((array) $columns);
+        return $this->where($column, $value)->first((array) $columns);
     }
 
     /**
@@ -227,17 +237,63 @@ abstract class SimpleRepository
      */
     public function exists($column, $value = null)
     {
-        $query = $this->createModel()->newQuery();
-        if (is_array($column)) {
+        return $this->where($column, $value)->exists();
+    }
+
+    /**
+     * Search.
+     *
+     * @param mixed $keywords
+     * @param null $rules
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function search($keywords = null, $rules = null)
+    {
+        $keywords = $keywords ?: $this->request;
+        $rules = $rules ? array_merge($this->searchRules, $rules) : $this->searchRules;
+
+        return BuilderFactory::make($this->createModel(), $keywords instanceof Request ? $keywords->all() : $keywords, $rules);
+    }
+
+    /**
+     * @param $column
+     * @param null $value
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function where($column, $value = null)
+    {
+        if ($column instanceof Request || (is_array($value) && Arr::isAssoc($value))) {
+            $query = BuilderFactory::make($this->createModel(), $column, $value);
+        } else {
+            $query = $this->createModel()->newQuery();
+
+            if (!is_array($column) && !$column instanceof Arrayable) {
+                $column = [$column => $value];
+                $value = null;
+            }
+
             $boolean = $value ?: 'and';
             foreach ($column as $field => $value) {
-                $query->where($field, '=', $value, $boolean);
+                if (is_array($value) || $value instanceof Arrayable) {
+                    $query->whereIn($field, $value, $boolean);
+                } else {
+                    $query->where($field, '=', $value, $boolean);
+                }
             }
-        } else {
-            $query->where($column, $value);
         }
 
-        return $query->exists();
+        return $query;
+    }
+
+    /**
+     * Create a new instance of the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function model()
+    {
+        return $this->createModel();
     }
 
     /**
@@ -250,10 +306,19 @@ abstract class SimpleRepository
         static $model;
 
         if (!$model) {
-            $class = '\\'.ltrim(Config::get($this->modelConfigKey), '\\');
-            $model = new $class;
+            if ($this->model instanceof Model) {
+                $model = $this->model;
+            } else if (is_string($this->model)) {
+                $class = '\\'.ltrim($this->model, '\\');
+                $model = new $class;
+            }
         }
 
         return clone $model;
+    }
+
+    public function init()
+    {
+
     }
 }
