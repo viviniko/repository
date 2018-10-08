@@ -10,15 +10,14 @@ class BuilderFactory
     /**
      * Create a new search builder instance.
      *
-     * @param  \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder $model
+     * @param  \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder $builder
      * @param  string|array  $query
      * @param  array  $rules
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder
      */
-    public static function make($model, $query, $rules)
+    public static function make($builder, $query, $rules)
     {
-        $builder = $model instanceof Model ? $model->newQuery() : $model;
         $rules = static::parseRules($rules);
 
         if (!empty($query) && is_array($query)) {
