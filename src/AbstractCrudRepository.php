@@ -73,9 +73,15 @@ abstract class AbstractCrudRepository implements CrudRepository
     /**
      * {@inheritdoc}
      */
-    public function save($id, $data = null)
+    public function save($attributes, $data = null)
     {
-        return $this->createQuery()->insert($data);
+        if (is_null($data)) {
+            $this->createQuery()->insert($attributes);
+        } else {
+            $this->createQuery()
+                ->where((is_string($attributes) || is_numeric($attributes)) ? ['id' => $attributes] : $attributes)
+                ->update($data);
+        }
     }
 
     /**
@@ -83,7 +89,9 @@ abstract class AbstractCrudRepository implements CrudRepository
      */
     public function create(array $data)
     {
-        return $this->createQuery()->insert($data);
+        $id = $this->createQuery()->insertGetId($data);
+
+        return $this->find($id);
     }
 
     /**
@@ -91,7 +99,9 @@ abstract class AbstractCrudRepository implements CrudRepository
      */
     public function update($id, array $data)
     {
-        return $this->createQuery()->where((is_numeric($id) || is_string($id)) ? ['id' => $id] : $id)->update($data);
+        $this->createQuery()->where((is_numeric($id) || is_string($id)) ? ['id' => $id] : $id)->update($data);
+
+        return $this->find($id);
     }
 
     /**

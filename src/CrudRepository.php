@@ -38,8 +38,6 @@ interface CrudRepository
      *
      * @param $attributes
      * @param array $data
-     *
-     * @return Object|null
      */
     public function save($attributes, $data = null);
 

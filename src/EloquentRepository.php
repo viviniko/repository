@@ -85,8 +85,6 @@ class EloquentRepository extends AbstractCrudRepository
         if ($entity && method_exists($this, 'postSave')) {
             $this->postSave($entity);
         }
-
-        return $entity;
     }
 
     /**
