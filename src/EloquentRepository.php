@@ -64,6 +64,34 @@ class EloquentRepository extends AbstractCrudRepository
     /**
      * {@inheritdoc}
      */
+    public function save($attributes, $data = null)
+    {
+        if (method_exists($this, 'beforeSave')) {
+            if (($data = $this->beforeSave($attributes, $data)) === false) {
+                return false;
+            }
+        }
+
+        if (is_null($data)) {
+            $entity = $this->createQuery()->create($attributes);
+        } else {
+            $entity = (is_string($attributes) || is_numeric($attributes)) ?
+                $this->find($attributes) :
+                $this->createQuery()->where($attributes)->first();
+            if ($entity)
+                $entity->update($data);
+        }
+
+        if ($entity && method_exists($this, 'postSave')) {
+            $this->postSave($entity);
+        }
+
+        return $entity;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function create(array $data)
     {
         if (method_exists($this, 'beforeCreate')) {
@@ -86,13 +114,13 @@ class EloquentRepository extends AbstractCrudRepository
      */
     public function update($id, array $data)
     {
-        if ($entity = $this->find($id)) {
-            if (method_exists($this, 'beforeUpdate')) {
-                if (($data = $this->beforeUpdate($id, $data)) === false) {
-                    return false;
-                }
+        if (method_exists($this, 'beforeUpdate')) {
+            if (($data = $this->beforeUpdate($id, $data)) === false) {
+                return false;
             }
+        }
 
+        if ($entity = $this->find($id)) {
             $entity->update($data);
 
             if (method_exists($this, 'postUpdate')) {
@@ -108,13 +136,13 @@ class EloquentRepository extends AbstractCrudRepository
      */
     public function delete($id)
     {
-        if ($entity = $this->find($id)) {
-            if (method_exists($this, 'beforeDelete')) {
-                if ($this->beforeDelete($id) === false) {
-                    return false;
-                }
+        if (method_exists($this, 'beforeDelete')) {
+            if ($this->beforeDelete($id) === false) {
+                return false;
             }
+        }
 
+        if ($entity = $this->find($id)) {
             if ($result = $entity->delete()) {
                 if (method_exists($this, 'postDelete')) {
                     $this->postDelete($entity);

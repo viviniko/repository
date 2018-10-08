@@ -36,11 +36,12 @@ interface CrudRepository
     /**
      * Save a new entity in repository
      *
+     * @param $attributes
      * @param array $data
      *
-     * @return bool
+     * @return Object|null
      */
-    public function insert(array $data);
+    public function save($attributes, $data = null);
 
     /**
      * Save a new entity in repository
