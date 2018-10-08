@@ -38,6 +38,15 @@ interface CrudRepository
      *
      * @param array $data
      *
+     * @return bool
+     */
+    public function insert(array $data);
+
+    /**
+     * Save a new entity in repository
+     *
+     * @param array $data
+     *
      * @return mixed
      */
     public function create(array $data);

@@ -73,9 +73,19 @@ abstract class AbstractCrudRepository implements CrudRepository
     /**
      * {@inheritdoc}
      */
-    public function create(array $data)
+    public function insert(array $data)
     {
         return $this->createQuery()->insert($data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function create(array $data)
+    {
+        $id = $this->createQuery()->insertGetId($data);
+        
+        return $this->find($id);
     }
 
     /**
