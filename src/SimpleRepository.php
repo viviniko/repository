@@ -240,6 +240,13 @@ class SimpleRepository
         return $this->where($column, $value)->exists();
     }
 
+    public function count($column = null, $value = null)
+    {
+        $query = $column ? $this->where($column, $value) : $this->createModel();
+
+        return $query->count();
+    }
+
     /**
      * Search.
      *
@@ -248,7 +255,7 @@ class SimpleRepository
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function search($keywords = null, $rules = null)
+    protected function search($keywords = null, $rules = null)
     {
         $keywords = $keywords ?: $this->request;
         $rules = $rules ? array_merge($this->searchRules, $rules) : $this->searchRules;
@@ -261,25 +268,21 @@ class SimpleRepository
      * @param null $value
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function where($column, $value = null)
+    protected function where($column, $value = null)
     {
-        if ($column instanceof Request || (is_array($value) && Arr::isAssoc($value))) {
-            $query = BuilderFactory::make($this->createModel(), $column, $value);
-        } else {
-            $query = $this->createModel()->newQuery();
+        $query = $this->createModel()->newQuery();
 
-            if (!is_array($column) && !$column instanceof Arrayable) {
-                $column = [$column => $value];
-                $value = null;
-            }
+        if (!is_array($column) && !$column instanceof Arrayable) {
+            $column = [$column => $value];
+            $value = null;
+        }
 
-            $boolean = $value ?: 'and';
-            foreach ($column as $field => $value) {
-                if (is_array($value) || $value instanceof Arrayable) {
-                    $query->whereIn($field, $value, $boolean);
-                } else {
-                    $query->where($field, '=', $value, $boolean);
-                }
+        $boolean = $value ?: 'and';
+        foreach ($column as $field => $value) {
+            if (is_array($value) || $value instanceof Arrayable) {
+                $query->whereIn($field, $value, $boolean);
+            } else {
+                $query->where($field, '=', $value, $boolean);
             }
         }
 
