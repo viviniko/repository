@@ -32,8 +32,6 @@ class EloquentRepository extends AbstractCrudRepository
         if ($model) {
             $this->model = $model;
         }
-
-        $this->init();
     }
 
     /**
@@ -41,7 +39,7 @@ class EloquentRepository extends AbstractCrudRepository
      */
     public function paginate($pageSize, $searchName = 'search', $search = null, $order = null)
     {
-        $searchRules = $this->searchRules ?? [];
+        $searchRules = $this->getSearchRules() ?? [];
         $query = [];
         if (is_array($searchName)) {
             if (Arr::isAssoc($searchName)) {
@@ -54,8 +52,8 @@ class EloquentRepository extends AbstractCrudRepository
             }
         }
 
-        if (is_string($searchName) && $this->request) {
-            $query = (array)$this->request->get($searchName);
+        if (is_string($searchName) && ($request = $this->getRequest())) {
+            $query = (array)$request->get($searchName);
         }
 
         return parent::paginate($pageSize, [$query, $searchRules, $searchName], $search, $order);
@@ -163,11 +161,12 @@ class EloquentRepository extends AbstractCrudRepository
      */
     public function search($keywords = null, $rules = null)
     {
-        $keywords = $keywords ?: $this->request;
+        $keywords = $keywords ?: $this->getRequest();
+        $searchRules = $this->getSearchRules() ?? [];
 
         return parent::search(
         $keywords instanceof Request ? $keywords->all() : $keywords,
-        $rules ? array_merge($this->searchRules, $rules) : $this->searchRules
+        array_merge($searchRules, $rules ?: [])
         );
     }
 
@@ -202,8 +201,23 @@ class EloquentRepository extends AbstractCrudRepository
         return clone $model;
     }
 
-    public function init()
+    public function getSearchRules()
     {
+        return $this->searchRules;
+    }
 
+    public function setSearchRules($searchRules)
+    {
+        $this->searchRules = $searchRules;
+    }
+
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+    public function setRequest($request)
+    {
+        $this->request = $request;
     }
 }
