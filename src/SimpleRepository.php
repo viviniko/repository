@@ -20,8 +20,6 @@ class SimpleRepository extends AbstractCrudRepository
         if ($table) {
             $this->table = $table;
         }
-
-        $this->init();
     }
 
     /**
@@ -31,11 +29,14 @@ class SimpleRepository extends AbstractCrudRepository
      */
     public function createQuery()
     {
-        return DB::table($this->table);
+        return DB::table($this->getTable());
     }
 
-    public function init()
+    /**
+     * @return string
+     */
+    public function getTable()
     {
-
+        return $this->table;
     }
 }
