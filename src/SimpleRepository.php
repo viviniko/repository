@@ -255,7 +255,7 @@ class SimpleRepository
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function search($keywords = null, $rules = null)
+    public function search($keywords = null, $rules = null)
     {
         $keywords = $keywords ?: $this->request;
         $rules = $rules ? array_merge($this->searchRules, $rules) : $this->searchRules;
@@ -268,7 +268,7 @@ class SimpleRepository
      * @param null $value
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function where($column, $value = null)
+    public function where($column, $value = null)
     {
         $query = $this->createModel()->newQuery();
 
