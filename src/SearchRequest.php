@@ -46,13 +46,11 @@ class SearchRequest
      */
     protected $requestParam;
 
-    public function __construct($size = 1000, $wheres = [], $orders = [])
+    public function __construct($size = 1000, array $wheres = [], array $orders = [])
     {
         $this->size = $size;
         $this->wheres = $wheres;
-        if (is_string($orders)) {
-            $this->orders = [[$orders, 'desc']];
-        } else if (Arr::isAssoc($orders)) {
+        if (Arr::isAssoc($orders)) {
             foreach ($orders as $name => $direct) {
                 $this->orders[] = [$name, $direct];
             }
