@@ -30,8 +30,14 @@ class SearchPageRequest extends SearchRequest
 
     public function apply(AbstractCrudRepository $repository)
     {
-        return parent::builder($repository)
+        $result = parent::builder($repository)
             ->paginate($this->size, $this->columns, $this->pageName, $this->page);
+
+        if (!empty($this->params) && !empty($this->requestParam)) {
+            $result->appends([$this->requestParam => $this->params]);
+        }
+
+        return $result;
     }
 
 
