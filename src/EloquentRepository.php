@@ -3,8 +3,6 @@
 namespace Viviniko\Repository;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 
 class EloquentRepository extends AbstractCrudRepository
 {
@@ -12,16 +10,6 @@ class EloquentRepository extends AbstractCrudRepository
      * @var \Illuminate\Database\Eloquent\Model
      */
     protected $model;
-
-    /**
-     * @var array
-     */
-    protected $searchRules = [];
-
-    /**
-     * @var \Illuminate\Http\Request
-     */
-    protected $request;
 
     /**
      * SimpleRepository constructor.
@@ -32,31 +20,6 @@ class EloquentRepository extends AbstractCrudRepository
         if ($model) {
             $this->model = $model;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function paginate($pageSize, $searchName = 'search', $search = null, $order = null)
-    {
-        $searchRules = $this->getSearchRules() ?? [];
-        $query = [];
-        if (is_array($searchName)) {
-            if (Arr::isAssoc($searchName)) {
-                $query = $searchName;
-            } else {
-                list($query, $searchRules) = $searchName;
-                if (is_string($query)) {
-                    $searchName = $query;
-                }
-            }
-        }
-
-        if (is_string($searchName) && ($request = $this->getRequest())) {
-            $query = (array)$request->get($searchName);
-        }
-
-        return parent::paginate($pageSize, [$query, $searchRules, $searchName], $search, $order);
     }
 
     /**
@@ -152,25 +115,6 @@ class EloquentRepository extends AbstractCrudRepository
     }
 
     /**
-     * Search.
-     *
-     * @param mixed $keywords
-     * @param null $rules
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function search($keywords = null, $rules = null)
-    {
-        $keywords = $keywords ?: $this->getRequest();
-        $searchRules = $this->getSearchRules() ?? [];
-
-        return parent::search(
-        $keywords instanceof Request ? $keywords->all() : $keywords,
-        array_merge($searchRules, $rules ?: [])
-        );
-    }
-
-    /**
      * Create a new instance of the query builder.
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -199,25 +143,5 @@ class EloquentRepository extends AbstractCrudRepository
         }
 
         return clone $model;
-    }
-
-    public function getSearchRules()
-    {
-        return $this->searchRules;
-    }
-
-    public function setSearchRules($searchRules)
-    {
-        $this->searchRules = $searchRules;
-    }
-
-    public function getRequest()
-    {
-        return $this->request;
-    }
-
-    public function setRequest($request)
-    {
-        $this->request = $request;
     }
 }

@@ -5,15 +5,13 @@ namespace Viviniko\Repository;
 interface CrudRepository
 {
     /**
-     * Paginate.
+     * Search.
      *
-     * @param $pageSize
-     * @param mixed $search
-     * @param null $where
-     * @param null $order
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @param SearchRequest $searchRequest
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    public function paginate($pageSize, $search = null, $where = null, $order = null);
+    public function search(SearchRequest $searchRequest);
 
     /**
      * All data.
