@@ -63,7 +63,7 @@ class SearchRequest
     {
         $this->rules = array_merge($this->rules ?? [], $rules);
 
-        return $this->rules;
+        return $this;
     }
 
     public function params(array $params)
