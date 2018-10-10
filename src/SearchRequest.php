@@ -59,6 +59,11 @@ class SearchRequest
         }
     }
 
+    public static function create($size = 1000, array $wheres = [], array $orders = [])
+    {
+        return new static($size, $wheres, $orders);
+    }
+
     public function rules(array $rules)
     {
         $this->rules = array_merge($this->rules ?? [], $rules);
