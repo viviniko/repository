@@ -37,6 +37,11 @@ class SearchDataRequest implements SearchRequest
     protected $columns = ['*'];
 
     /**
+     * @var array
+     */
+    protected $filters = [];
+
+    /**
      * @var \Illuminate\Http\Request
      */
     protected $request;
@@ -101,6 +106,13 @@ class SearchDataRequest implements SearchRequest
         return $this;
     }
 
+    public function filter($filter)
+    {
+        $this->filters[] = $filter;
+
+        return $this;
+    }
+
     public function where($field, $value)
     {
         $this->wheres[$field] = $value;
@@ -136,6 +148,13 @@ class SearchDataRequest implements SearchRequest
         }
 
         $builder = BuilderFactory::make($repository->where($this->wheres), $this->params, $this->rules);
+        if (!empty($this->filters)) {
+            foreach ($this->filters as $filter) {
+                if (is_callable($filter)) {
+                    $builder = $filter($builder);
+                }
+            }
+        }
         if (is_array($this->orders)) {
             foreach ($this->orders as $orders) {
                 $builder->orderBy(...(is_array($orders) ? $orders : [$orders, 'desc']));
