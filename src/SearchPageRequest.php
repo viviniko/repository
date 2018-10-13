@@ -2,7 +2,7 @@
 
 namespace Viviniko\Repository;
 
-class SearchPageRequest extends SearchRequest
+class SearchPageRequest extends SearchDataRequest
 {
     /**
      * @var int
