@@ -124,17 +124,17 @@ class SearchDataRequest implements SearchRequest
 
     public function apply(CrudRepository $repository)
     {
-        if (!$repository instanceof AbstractCrudRepository) {
-            throw new \InvalidArgumentException();
-        }
-
         return $this->builder($repository)
             ->limit($this->size)
             ->get($this->columns);
     }
 
-    protected function builder(AbstractCrudRepository $repository)
+    protected function builder(CrudRepository $repository)
     {
+        if (!$repository instanceof AbstractCrudRepository) {
+            throw new \InvalidArgumentException();
+        }
+
         $builder = BuilderFactory::make($repository->where($this->wheres), $this->params, $this->rules);
         if (is_array($this->orders)) {
             foreach ($this->orders as $orders) {

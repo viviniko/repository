@@ -28,7 +28,7 @@ class SearchPageRequest extends SearchDataRequest
         return $this;
     }
 
-    public function apply(AbstractCrudRepository $repository)
+    public function apply(CrudRepository $repository)
     {
         $result = parent::builder($repository)
             ->paginate($this->size, $this->columns, $this->pageName, $this->page);
