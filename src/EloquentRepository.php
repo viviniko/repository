@@ -131,17 +131,13 @@ class EloquentRepository extends AbstractCrudRepository
      */
     public function createModel()
     {
-        static $model;
-
-        if (!$model) {
-            if ($this->model instanceof Model) {
-                $model = $this->model;
-            } else if (is_string($this->model)) {
+        if (!$this->model instanceof Model) {
+            if (is_string($this->model)) {
                 $class = '\\'.ltrim($this->model, '\\');
-                $model = new $class;
+                $this->model = new $class;
             }
         }
 
-        return clone $model;
+        return clone $this->model;
     }
 }
