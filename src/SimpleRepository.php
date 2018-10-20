@@ -19,14 +19,18 @@ class SimpleRepository extends AbstractCrudRepository
     public function __construct($table = null)
     {
         if ($table) {
-            if (class_exists($table)) {
-                $table = new $table;
-            }
-            if ($table instanceof Model) {
-                $table = $table->getTable();
-            }
             $this->table = $table;
         }
+    }
+
+    public static function createFromModel($model)
+    {
+        if (is_string($model) && class_exists($model)) {
+            $model = new $model;
+        }
+        throw_if(!$model instanceof Model, new \InvalidArgumentException());
+        
+        return new static($model->getTable());
     }
 
     /**
