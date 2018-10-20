@@ -2,6 +2,7 @@
 
 namespace Viviniko\Repository;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class SimpleRepository extends AbstractCrudRepository
@@ -18,6 +19,12 @@ class SimpleRepository extends AbstractCrudRepository
     public function __construct($table = null)
     {
         if ($table) {
+            if (class_exists($table)) {
+                $table = new $table;
+            }
+            if ($table instanceof Model) {
+                $table = $table->getTable();
+            }
             $this->table = $table;
         }
     }
