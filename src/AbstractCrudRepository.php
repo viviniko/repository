@@ -85,6 +85,10 @@ abstract class AbstractCrudRepository implements CrudRepository
      */
     public function findAllBy($column, $value = null, $columns = ['*'])
     {
+        if (is_array($column) || $column instanceof Arrayable) {
+            $columns = $value ?: $columns;
+        }
+
         return $this->where($column, $value)->get((array) $columns);
     }
 
@@ -93,6 +97,10 @@ abstract class AbstractCrudRepository implements CrudRepository
      */
     public function findBy($column, $value = null, $columns = ['*'])
     {
+        if (is_array($column) || $column instanceof Arrayable) {
+            $columns = $value ?: $columns;
+        }
+
         return $this->where($column, $value)->first((array) $columns);
     }
 

@@ -29,7 +29,7 @@ class SimpleRepository extends AbstractCrudRepository
             $model = new $model;
         }
         throw_if(!$model instanceof Model, new \InvalidArgumentException());
-        
+
         return new static($model->getTable());
     }
 
