@@ -14,22 +14,22 @@ class SearchDataRequest implements SearchRequest
     /**
      * @var array
      */
-    protected $params;
+    protected $params = [];
 
     /**
      * @var array
      */
-    protected $rules;
+    protected $rules = [];
 
     /**
      * @var array
      */
-    protected $wheres;
+    protected $wheres = [];
 
     /**
      * @var array
      */
-    protected $orders;
+    protected $orders = [];
 
     /**
      * @var array
