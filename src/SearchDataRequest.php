@@ -14,22 +14,22 @@ class SearchDataRequest implements SearchRequest
     /**
      * @var array
      */
-    protected $params = [];
+    protected $params;
 
     /**
      * @var array
      */
-    protected $rules = [];
+    protected $rules;
 
     /**
      * @var array
      */
-    protected $wheres = [];
+    protected $wheres;
 
     /**
      * @var array
      */
-    protected $orders = [];
+    protected $orders;
 
     /**
      * @var array
@@ -147,7 +147,7 @@ class SearchDataRequest implements SearchRequest
             throw new \InvalidArgumentException();
         }
 
-        $builder = BuilderFactory::make($repository->where($this->wheres), $this->params, $this->rules);
+        $builder = BuilderFactory::make($repository->where($this->wheres), $this->params ?? [], $this->rules ?? []);
         if (!empty($this->filters)) {
             foreach ($this->filters as $filter) {
                 if (is_callable($filter)) {
