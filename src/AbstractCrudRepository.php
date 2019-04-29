@@ -7,6 +7,11 @@ use Illuminate\Contracts\Support\Arrayable;
 abstract class AbstractCrudRepository implements CrudRepository
 {
     /**
+     * @var string
+     */
+    private $keyName;
+
+    /**
      * {@inheritdoc}
      */
     public function search(SearchRequest $searchRequest)
@@ -39,7 +44,7 @@ abstract class AbstractCrudRepository implements CrudRepository
             $this->createQuery()->insert($attributes);
         } else {
             $this->createQuery()
-                ->where((is_string($attributes) || is_numeric($attributes)) ? ['id' => $attributes] : $attributes)
+                ->where((is_string($attributes) || is_numeric($attributes)) ? [$this->getKeyName() => $attributes] : $attributes)
                 ->update($data);
         }
     }
@@ -59,7 +64,7 @@ abstract class AbstractCrudRepository implements CrudRepository
      */
     public function update($id, array $data)
     {
-        $this->createQuery()->where((is_numeric($id) || is_string($id)) ? ['id' => $id] : $id)->update($data);
+        $this->createQuery()->where((is_numeric($id) || is_string($id)) ? [$this->getKeyName() => $id] : $id)->update($data);
 
         return $this->find($id);
     }
@@ -146,6 +151,20 @@ abstract class AbstractCrudRepository implements CrudRepository
         }
 
         return $query;
+    }
+
+    private function getKeyName()
+    {
+        if (!$this->keyName) {
+            $query = $this->createQuery();
+            if ($query instanceof \Illuminate\Database\Eloquent\Builder) {
+                $this->keyName = $query->getModel()->getKeyName();
+            }
+
+            $this->keyName = 'id';
+        }
+
+        return $this->keyName;
     }
 
     /**
