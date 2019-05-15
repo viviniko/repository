@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class EloquentRepository extends AbstractCrudRepository
 {
-    use Paginator;
-
     /**
      * @var \Illuminate\Database\Eloquent\Model
      */
