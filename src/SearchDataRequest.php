@@ -54,14 +54,8 @@ class SearchDataRequest implements SearchRequest
     public function __construct($size = 1000, array $wheres = [], array $orders = [])
     {
         $this->size = $size;
-        $this->wheres = $wheres;
-        if (Arr::isAssoc($orders)) {
-            foreach ($orders as $name => $direct) {
-                $this->orders[] = [$name, $direct];
-            }
-        } else {
-            $this->orders = $orders;
-        }
+        $this->wheres($wheres);
+        $this->orders($orders);
     }
 
     public static function create($size = 1000, array $wheres = [], array $orders = [])
@@ -109,6 +103,26 @@ class SearchDataRequest implements SearchRequest
     public function filter($filter)
     {
         $this->filters[] = $filter;
+
+        return $this;
+    }
+
+    public function wheres(array $wheres)
+    {
+        $this->wheres = $wheres;
+
+        return $this;
+    }
+
+    public function orders(array $orders)
+    {
+        if (Arr::isAssoc($orders)) {
+            foreach ($orders as $name => $direct) {
+                $this->orders[] = [$name, $direct];
+            }
+        } else {
+            $this->orders = $orders;
+        }
 
         return $this;
     }
