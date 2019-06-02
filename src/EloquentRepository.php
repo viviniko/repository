@@ -73,13 +73,13 @@ class EloquentRepository extends AbstractCrudRepository
      */
     public function update($id, array $data)
     {
-        if (method_exists($this, 'beforeUpdate')) {
-            if (($data = $this->beforeUpdate($id, $data)) === false) {
-                return false;
-            }
-        }
-
         if ($entity = $this->find($id)) {
+            if (method_exists($this, 'beforeUpdate')) {
+                if (($data = $this->beforeUpdate($entity, $data)) === false) {
+                    return false;
+                }
+            }
+
             $entity->update($data);
 
             if (method_exists($this, 'postUpdate')) {
@@ -95,21 +95,21 @@ class EloquentRepository extends AbstractCrudRepository
      */
     public function delete($id)
     {
-        if (method_exists($this, 'beforeDelete')) {
-            if ($this->beforeDelete($id) === false) {
-                return false;
-            }
-        }
-
         $deleted = 0;
-        $this->findAllBy($this->getKeyName(), $id)->each(function ($entity) use (&$deleted) {
+        $entities = $this->findAllBy($this->getKeyName(), $id);
+        foreach ($entities as $entity) {
+            if (method_exists($this, 'beforeDelete')) {
+                if ($this->beforeDelete($entity) === false) {
+                    return $deleted;
+                }
+            }
             if ($entity->delete()) {
                 if (method_exists($this, 'postDelete')) {
                     $this->postDelete($entity);
                 }
                 ++ $deleted;
             }
-        });
+        }
 
         return $deleted;
     }
