@@ -74,7 +74,7 @@ abstract class AbstractCrudRepository implements CrudRepository
      */
     public function delete($id)
     {
-        return $this->createQuery()->delete($id);
+        return $this->where($this->getKeyName(), $id)->delete();
     }
 
     /**

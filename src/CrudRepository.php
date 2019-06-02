@@ -61,9 +61,9 @@ interface CrudRepository
     /**
      * Delete a entity in repository by id
      *
-     * @param $id
+     * @param mixed $id
      *
-     * @return bool
+     * @return int
      */
     public function delete($id);
 
