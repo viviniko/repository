@@ -101,17 +101,17 @@ class EloquentRepository extends AbstractCrudRepository
             }
         }
 
-        if ($entity = $this->find($id)) {
-            if ($result = $entity->delete()) {
+        $deleted = 0;
+        $this->findAllBy($this->getKeyName(), $id)->each(function ($entity) use (&$deleted) {
+            if ($entity->delete()) {
                 if (method_exists($this, 'postDelete')) {
                     $this->postDelete($entity);
                 }
-
-                return $result;
+                ++ $deleted;
             }
-        }
+        });
 
-        return false;
+        return $deleted;
     }
 
     /**

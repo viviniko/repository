@@ -153,7 +153,7 @@ abstract class AbstractCrudRepository implements CrudRepository
         return $query;
     }
 
-    private function getKeyName()
+    protected function getKeyName()
     {
         if (!$this->keyName) {
             $query = $this->createQuery();
