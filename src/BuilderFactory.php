@@ -25,24 +25,26 @@ class BuilderFactory
                 if ($value != '' && isset($rules[$name])) {
                     $condition = $rules[$name];
                     if (is_string($condition)) {
-                        if (Str::contains($condition, 'between')) {
-                            $builder->whereBetween($name, static::formatValueByOperator($condition, $value));
-                        } else {
-                            $builder->where($name, $condition, static::formatValueByOperator($condition, $value));
-                        }
-                    } else if (is_array($condition)) {
-                        $builder->where(function($subQuery) use ($condition, $value) {
-                            $i = 0;
-                            while ($i * 2 < count($condition)) {
-                                $subQuery->where(
-                                    $condition[$i * 2][0],
-                                    $condition[$i * 2][1],
-                                    static::formatValueByOperator($condition[$i * 2][1], $value),
-                                    $i > 0 ? $condition[$i * 2 - 1] : 'and'
-                                );
-                                ++$i;
+                        $condition = [$name, $condition];
+                    }
+
+                    if (is_array($condition)) {
+                        $i = 0;
+                        $column = $condition[$i * 2][0];
+                        $arr = explode('!', $condition[$i * 2][1]);
+                        $boolean = $i > 0 ? $condition[$i * 2 - 1] : 'and';
+                        $method = 'where';
+                        $val = static::formatValueByOperator($arr[0], $value, $arr[1] ?? null);
+                        $args = [$column, $arr[0], $val, $boolean];
+                        while ($i * 2 < count($condition)) {
+                            $func = 'where' . Str::studly($arr[0]);
+                            if (method_exists($builder, $func) || method_exists($builder->getQuery(), $func)) {
+                                $method = $func;
+                                $args = [$column, $val, $boolean];
                             }
-                        });
+                            $builder->$method(...$args);
+                            ++$i;
+                        }
                     }
                 }
             }
@@ -51,14 +53,14 @@ class BuilderFactory
         return $builder;
     }
 
-    protected static function formatValueByOperator($operator, $value)
+    protected static function formatValueByOperator($operator, $value, $type)
     {
         if (Str::contains($operator, 'like') !== false) {
             return "%$value%";
         }
         if (Str::contains($operator, 'between') !== false) {
             $value = explode(' - ', $value, 2);
-            if ($type = strtolower(last(explode('between', $operator)))) {
+            if (!empty($type)) {
                 $value = array_map(function($item) use ($type) {
                     switch ($type) {
                     case 'date':
