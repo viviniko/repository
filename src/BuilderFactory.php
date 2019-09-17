@@ -25,7 +25,7 @@ class BuilderFactory
                 if ($value != '' && isset($rules[$name])) {
                     $condition = $rules[$name];
                     if (is_string($condition)) {
-                        $condition = [$name, $condition];
+                        $condition = [[$name, $condition]];
                     }
 
                     if (is_array($condition)) {
