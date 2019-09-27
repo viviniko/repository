@@ -14,11 +14,6 @@ class SearchDataRequest implements SearchRequest
     /**
      * @var array
      */
-    protected $params;
-
-    /**
-     * @var array
-     */
     protected $rules;
 
     /**
@@ -49,7 +44,22 @@ class SearchDataRequest implements SearchRequest
     /**
      * @var string
      */
-    protected $requestParam;
+    protected $queryName = 'search';
+
+    /**
+     * @var array
+     */
+    protected $query;
+
+    /**
+     * @var string
+     */
+    protected $sortName = 'sort';
+
+    /**
+     * @var array
+     */
+    protected $sort;
 
     public function __construct($size = 1000, array $wheres = [], array $orders = [])
     {
@@ -70,9 +80,16 @@ class SearchDataRequest implements SearchRequest
         return $this;
     }
 
-    public function params(array $params)
+    public function query(array $query)
     {
-        $this->params = array_merge($this->params ?? [], $params);
+        $this->query = array_merge($this->query ?? [], $query);
+
+        return $this;
+    }
+
+    public function sort(array $sort)
+    {
+        $this->sort = array_merge($this->sort ?? [], $sort);
 
         return $this;
     }
@@ -84,17 +101,24 @@ class SearchDataRequest implements SearchRequest
         return $this;
     }
 
-    public function request($request, $requestParam = null)
+    public function request($request, $queryName = null, $sortName = null)
     {
         $this->request = $request;
-        $this->requestParam = $requestParam;
-        $params = $this->requestParam ? $this->request->get($this->requestParam) : $this->request->all();
-        if (!is_array($params) && $this->requestParam) {
-            $params = [$this->requestParam => $params];
+        $this->queryName = $queryName ?? $this->queryName;
+        $this->sortName = $sortName ?? $this->sortName;
+        if ($request->has($this->queryName)) {
+            $query = $this->request->get($this->queryName);
+            if (!is_array($query)) {
+                $query = [$this->queryName => $query];
+            }
+            $this->query($query);
         }
-
-        if (is_array($params)) {
-            $this->params($params);
+        if ($request->has($this->sortName)) {
+            $sort = $this->request->get($this->sortName);
+            if (!is_array($sort)) {
+                $sort = [$this->sortName => $sort];
+            }
+            $this->sort($sort);
         }
 
         return $this;
@@ -169,9 +193,10 @@ class SearchDataRequest implements SearchRequest
                 }
             }
         }
-        if (is_array($this->orders)) {
-            foreach ($this->orders as $orders) {
-                $builder->orderBy(...(is_array($orders) ? $orders : [$orders, 'desc']));
+        $orders = array_merge($this->orders ?? [], $this->sort ?? []);
+        if (!empty($orders)) {
+            foreach ($orders as $order) {
+                $builder->orderBy(...(is_array($order) ? $order : [$order, 'desc']));
             }
         }
 

@@ -33,8 +33,16 @@ class SearchPageRequest extends SearchDataRequest
         $result = parent::builder($repository)
             ->paginate($this->size, $this->columns, $this->pageName, $this->page);
 
-        if (!empty($this->params) && !empty($this->requestParam)) {
-            $result->appends([$this->requestParam => $this->params]);
+        if (!empty($this->query)) {
+            if (!empty($this->queryName)) {
+                $result->appends([$this->queryName => $this->query]);
+            }
+        }
+
+        if (!empty($this->sort)) {
+            if (!empty($this->sortName)) {
+                $result->appends([$this->sortName => $this->sort]);
+            }
         }
 
         return $result;
