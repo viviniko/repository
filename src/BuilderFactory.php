@@ -22,7 +22,7 @@ class BuilderFactory
 
         if (!empty($query) && is_array($query)) {
             foreach ($query as $name => $value) {
-                if ($value != '' && isset($rules[$name])) {
+                if ($value != null && trim($value) != '' && isset($rules[$name])) {
                     $condition = $rules[$name];
                     if (is_string($condition)) {
                         $condition = [[$name, $condition]];
