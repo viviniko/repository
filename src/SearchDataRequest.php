@@ -185,7 +185,7 @@ class SearchDataRequest implements SearchRequest
             throw new \InvalidArgumentException();
         }
 
-        $builder = BuilderFactory::make($repository->where($this->wheres), $this->params ?? [], $this->rules ?? []);
+        $builder = BuilderFactory::make($repository->where($this->wheres), $this->query ?? [], $this->rules ?? []);
         if (!empty($this->filters)) {
             foreach ($this->filters as $filter) {
                 if (is_callable($filter)) {
